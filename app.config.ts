@@ -57,7 +57,7 @@ const config: ExpoConfig = {
   android: {
     adaptiveIcon: {
       backgroundColor: "#E6F4FE",
-      foregroundImage: "./assets/images/android-icon-foreground.webp",
+      foregroundImage: "./assets/images/android-icon-foreground.png", // 使用 PNG 版本
       backgroundImage: "./assets/images/android-icon-background.png",
       monochromeImage: "./assets/images/android-icon-monochrome.png",
     },
@@ -102,7 +102,7 @@ const config: ExpoConfig = {
     [
       "expo-splash-screen",
       {
-        image: "./assets/images/splash-icon.webp",
+        image: "./assets/images/splash-icon.png", // PNG 格式
         imageWidth: 200,
         resizeMode: "contain",
         backgroundColor: "#ffffff",
