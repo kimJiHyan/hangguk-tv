@@ -1,0 +1,70 @@
+name: Build APK Local
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+      
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          api-level: 36
+          build-tools-version: '36.0.0'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Prebuild Android
+        run: npx expo prebuild --platform android --clean --non-interactive
+      
+      - name: Build Release APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon -x lint
+      
+      - name: Find APK
+        run: |
+          APK=$(find android -name "app-release.apk" -type f | head -1)
+          if [ -z "$APK" ]; then
+            echo "APK not found!"
+            exit 1
+          fi
+          echo "APK_PATH=$APK" >> $GITHUB_ENV
+          ls -lh "$APK"
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: ${{ env.APK_PATH }}
+          if-no-files-found: error
+      
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.APK_PATH }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
